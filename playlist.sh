@@ -46,7 +46,7 @@ while [ $i -lt $max ] ; do
 	logo=$(echo ${channel} | jq -r ".logoUrl")
 	channel_num=$(echo ${channel} | jq -r ".defaultChannelPosition")
 	printf "${PREFIX1ST} tvg-logo='%s' tvh-chnum='%s' tvg-id='%s',%s\n" "${logo}" "${channel_num}" "${id}.${service}.magio.tv" "${name}" >> ${playlist}
-	printf "${PREFIX2ND} %s\n" "${id}" >> ${playlist}
+	printf "${PREFIX2ND} %s '%s'\n" "${id}" "${name}" >> ${playlist}
 	i=$((i + 1))
 	printf "Generated %s channels.\r" $i
 done
