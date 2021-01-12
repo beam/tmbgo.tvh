@@ -2,6 +2,7 @@
 # Konfigurace
 
 current_location=$(dirname $0)
+
 [ ! -f "${current_location}/config.file" ] && echo "ERROR: Config file not found. Starting configuration..\n"
 echo "Choose a service:"
 echo "1) T-Mobile TV GO (CZ)"

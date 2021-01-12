@@ -4,6 +4,9 @@
 # Uživatelské parametry si nastavte při prvním spuštení skriptu nebo s parametrem --config.
 
 current_location=$(dirname $0)
+
+if [ "$1" = "--silent" ]; then silent_login_if_expired=true; fi
+
 if [ ! -f "${current_location}/config.file" ] || [ "$1" = "--config" ] ; then
     . ${current_location}/config.sh
 else
@@ -21,8 +24,14 @@ if [ -f "${current_location}/access.token" ] ; then
     access_token=$(cat ${current_location}/access.token | head -n 1 )
     token=$(echo ${access_token} | cut -d ' ' -f1)
     refresh=$(echo ${access_token} | cut -d ' ' -f2)
+    expiry=$(echo ${access_token} | cut -d ' ' -f3)
+    current_time=$(date +%s%N | cut -b1-13)
 else 
     refresh="login"
+fi
+
+if [ "${silent_login_if_expired}" = true ] && [ "${expiry}" ] ; then
+    if [ "${current_time}" -lt "${expiry}" ] ; then exit 0; fi
 fi
 
 refresh_data={\"refreshToken\":\"${refresh}\"}
@@ -47,7 +56,7 @@ if [ $? != 0 ] || [ $(echo ${refresh_request} | jq -r ".success") != "true" ] ; 
 
     printf "%s %s %s" "${token}" "${refresh}" "${expiry}" > "${current_location}/access.token"
     if [ $? != 0 ] ; then printf "ERROR: Unsuccessful write into ${current_location}/access.token\n" ; exit 1 ; fi
-    echo "Access token and refresh token saved!"
+    if [ "${silent_login_if_expired}" != true ] ; then echo "Access token and refresh token saved!"; fi
     exit 0
 else
     token=$(echo ${refresh_request} | jq -r ".token.accessToken")
@@ -55,6 +64,6 @@ else
     refresh=$(echo ${refresh_request} | jq -r ".token.refreshToken")
     printf "%s %s %s" "${token}" "${refresh}" "${expiry}" > "${current_location}/access.token"
     if [ $? != 0 ] ; then printf "ERROR: Unsuccessful write into ${current_location}/access.token\n" ; exit 1 ; fi
-    echo "Access token and refresh token saved!"
+    if [ "${silent_login_if_expired}" != true ] ; then echo "Access token and refresh token saved!"; fi
     exit 0
 fi

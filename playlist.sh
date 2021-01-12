@@ -1,12 +1,11 @@
 #! /bin/sh
-# T-Mobile TV GO / Magio GO
-# v0.2
-# Autor: koperfield
 # Získání playlistu
 
-# Uživatelské parametry si nastavte při prvním spuštení skriptu login.sh nebo s parametrem --config.
-
 current_location=$(dirname $0)
+
+${current_location}/login.sh --silent
+if [ $? != 0 ] ; then echo "Login error"; exit 1; fi
+
 if [ ! -f "${current_location}/config.file" ] ; then printf "ERROR: Config file not found. Please run login.sh.\n" ; exit 1 ; fi
 file=$(cat ${current_location}/config.file | head -n 1 )
 service=$(echo ${file} | cut -d ' ' -f1)
