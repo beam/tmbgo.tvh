@@ -1,27 +1,37 @@
 #! /bin/sh
-# T-Mobile TV GO
-# v0.1
+# T-Mobile TV GO / Magio GO
+# v0.2
 # Autor: koperfield
 # Získání playlistu
 
-# Uživatelské parametry
-# Absolutní cesta k adresáři služby ve tvaru /.../
-data=
-# Konec zadáni uživatelských parametrů
+# Uživatelské parametry si nastavte při prvním spuštení skriptu login.sh nebo s parametrem --config.
 
-playlist=${data}playlist.general.m3u8
-streamer=${data}streamer.sh
+current_location=$(dirname $0)
+if [ ! -f "${current_location}/config.file" ] ; then printf "ERROR: Config file not found. Please run login.sh.\n" ; exit 1 ; fi
+file=$(cat ${current_location}/config.file | head -n 1 )
+service=$(echo ${file} | cut -d ' ' -f1)
+script=$(echo ${file} | cut -d ' ' -f5)
+if [ ! -f "${current_location}/access.token" ] ; then printf "ERROR: Access token not found. Please run login.sh.\n" ; exit 1 ; fi
+access_token=$(cat ${current_location}/access.token | head -n 1 )
+token=$(echo ${access_token} | cut -d ' ' -f1)
+refresh=$(echo ${access_token} | cut -d ' ' -f2)
+
+playlist=${current_location}/playlist.general.m3u8
+streamer=${script}streamer.sh
 
 PREFIX=#EXTM3U
 PREFIX1ST=#EXTINF:-1,
 PREFIX2ND=pipe://${streamer}
 
-access_token=$(cat ${data}access.token | head -n 1 )
-token=$(echo ${access_token} | cut -d ' ' -f1)
-refresh=$(echo ${access_token} | cut -d ' ' -f2)
-
-channels=$(wget -qO - --header "Authorization: Bearer ${token}" --header "Content-Type: application/json" "https://czgo.magio.tv/v2/television/channels?list=LIVE")
-if [ $? != 0 ] ; then printf "ERROR: Unsuccessful getting of channel list\n" ; exit 1 ; fi
+channels=$(curl -s --header "Authorization: Bearer ${token}" --header "Content-Type: application/json" "https://${service}.magio.tv/v2/television/channels?list=LIVE")
+if [ $? != 0 ] ; then printf "ERROR: Unsuccessful channel list request.\n" ; exit 1 ; fi
+channels=$(echo ${channels} | tr '\r\n' ' ')
+channels_success=$(echo ${channels} | jq -r '.success')
+if [ $channels_success != "true" ] ; then
+channels_error=$(echo ${channels} | jq -r '.errorMessage')
+echo "ERROR: Server responded: ${error}"
+exit 1
+fi
 channels=$(echo ${channels} | tr '\r\n' ' ')
 max=$(echo ${channels} | jq -r ".items" | jq -r ".|length")
 items=$(echo ${channels} | jq -r ".items")
