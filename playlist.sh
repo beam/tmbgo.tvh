@@ -42,7 +42,7 @@ printf "${PREFIX}\n" > ${playlist}
 while [ $i -lt $max ] ; do
 	channel=$(echo ${items} | jq -r ".[${i}].channel")
 	id=$(echo ${channel} | jq -r ".channelId")
-	name=$(echo ${channel} | jq -r ".name")
+	name=$(echo ${channel} | jq -r ".name" | sed -f ${current_location}/encode.sed)
 	logo=$(echo ${channel} | jq -r ".logoUrl")
 	channel_num=$(echo ${channel} | jq -r ".defaultChannelPosition")
 	printf "${PREFIX1ST} tvg-logo='%s' tvh-chnum='%s' tvg-id='%s',%s\n" "${logo}" "${channel_num}" "${id}.${service}.magio.tv" "${name}" >> ${playlist}
