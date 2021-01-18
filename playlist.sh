@@ -45,7 +45,7 @@ while [ $i -lt $max ] ; do
 	name=$(echo ${channel} | jq -r ".name" | sed -f ${current_location}/encode.sed)
 	logo=$(echo ${channel} | jq -r ".logoUrl")
 	channel_num=$(echo ${channel} | jq -r ".defaultChannelPosition")
-	printf "${PREFIX1ST} tvg-logo='%s' tvh-chnum='%s' tvg-id='%s' tvh-epg='%',%s\n" "${logo}" "${channel_num}" "ch${id}.${service}.magio.tv" "0" "${name}" >> ${playlist}
+	printf "${PREFIX1ST} tvg-logo='%s' tvh-chnum='%s' tvg-id='%s' tvh-epg='%s',%s\n" "${logo}" "${channel_num}" "ch${id}.${service}.magio.tv" "0" "${name}" >> ${playlist}
 	printf "${PREFIX2ND} %s '%s'\n" "${id}" "${name}" >> ${playlist}
 	i=$((i + 1))
 	printf "Generated %s channels.\r" $i
