@@ -4,6 +4,7 @@ epg_days=3
 current_location=$(dirname $0)
 epg_json_file=${current_location}/fetched_schedule.json
 xmltv_file=${current_location}/epg.xmltv
+final_dest="~/.xmltv/tv_grab_file.xmltv"
 
 ${current_location}/login.sh --silent
 if [ $? != 0 ] ; then echo "Login error"; exit 1; fi
@@ -34,7 +35,7 @@ for day in $(seq 0 ${epg_days}); do
   while [ "${item_count}" -eq "${limit}" ] ; do
     echo -n "."
     epg=$(curl -s --header "Authorization: Bearer ${token}" --header "Content-Type: application/json" "https://${service}.magio.tv/v2/television/epg?limit=${limit}&offset=$(($limit * $offset))&list=LIVE&filter=${filter}")
-    epg=$(echo ${epg} | sed ':a;N;$!ba;s/\n/ /g' | sed -E 's/\\([A-Za-z]){1}/ \1/g')
+    epg=$(echo ${epg} | sed ':a;N;$!ba;s/\n/ /g' | sed -E 's/[\\]+([A-Za-z]){1}/ \1/g')
     epg_success=$(echo ${epg} | jq -r '.success')
     if [ "${epg_success}" != "true" ] ; then
       epg_error=$(echo ${epg} | jq -r '.errorMessage,.developerMessage')
@@ -123,3 +124,7 @@ echo '</tv>' >> ${xmltv_file}
 
 echo "\nXMLTV xml done!"
 
+echo "Creating ${final_dest}"
+cp ${xmltv_file} ${final_dest}
+
+echo "Finished"
